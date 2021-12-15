@@ -5,6 +5,7 @@ import { GenerateOtpModule } from './generate-otp/generate-otp.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GenerateOtp } from './generate-otp/entities/generate-otp.entity';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { GenerateOtp } from './generate-otp/entities/generate-otp.entity';
       useNewUrlParser: true,
     }),
     TypeOrmModule.forFeature([GenerateOtp]),
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

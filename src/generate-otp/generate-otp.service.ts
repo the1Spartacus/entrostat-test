@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { MailService } from 'src/mail/mail.service';
 import { LessThan, MongoRepository, ObjectID, Raw } from 'typeorm';
 import { CreateGenerateOtpDto } from './dto/create-generate-otp.dto';
 import { UpdateGenerateOtpDto } from './dto/update-generate-otp.dto';
@@ -15,6 +16,7 @@ export class GenerateOtpService {
   constructor(
     @InjectRepository(GenerateOtp)
     private readonly generateOtpRepository: MongoRepository<GenerateOtp>,
+    private mailService: MailService
   ) {}
 
   async create(generateOtp: Partial<GenerateOtp>) {
@@ -85,8 +87,8 @@ export class GenerateOtpService {
     });
 
     if (rec.length < 3) {
-      this.create(reqData);
-      // call function to send otp to user via an email
+      await this.create(reqData);
+      await this.mailService.sendOtp(reqData.email, reqData.otp);
     } else {
       console.log(`this ${email} can not request otp at the moment`);
     }
@@ -125,6 +127,7 @@ export class GenerateOtpService {
     if (minutes < resentMinutes) {
       this.updateOTPExpiry(false, letestRec.email, letestRec.id);
       // then send otp
+      await this.mailService.sendOtp(letestRec.email, letestRec.otp);
     } else {
       // generate new otp
       this.generateOTP(email);
