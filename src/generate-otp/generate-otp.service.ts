@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MailService } from 'src/mail/mail.service';
 import { LessThan, MongoRepository, ObjectID, Raw } from 'typeorm';
@@ -10,7 +11,7 @@ import { CreateGenerateOtpDto } from './dto/create-generate-otp.dto';
 import { UpdateGenerateOtpDto } from './dto/update-generate-otp.dto';
 import { GenerateOtp } from './entities/generate-otp.entity';
 // const cron = require('node-cron');
-
+const expiryTimeInSec = 30
 @Injectable()
 export class GenerateOtpService {
   constructor(
@@ -18,7 +19,7 @@ export class GenerateOtpService {
     private readonly generateOtpRepository: MongoRepository<GenerateOtp>,
     private mailService: MailService
   ) {}
-
+  
   async create(generateOtp: Partial<GenerateOtp>) {
     if (!generateOtp || !generateOtp.email || !generateOtp.otp) {
       throw new BadRequestException(
@@ -133,7 +134,8 @@ export class GenerateOtpService {
       this.generateOTP(email);
     }
   }
-  // const expiryTimeInSec = 30;
+  
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async updateOtpStatus(email: string) {
     const rec = await this.generateOtpRepository.find({
       where: {
